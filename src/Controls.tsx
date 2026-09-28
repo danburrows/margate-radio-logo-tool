@@ -1,5 +1,5 @@
-import { MAX_DARKEN, MAX_ZOOM, MIN_ZOOM } from "./geometry";
-import type { Legibility, LoadedImage, PhotoAdjust, ShowDetails } from "./types";
+import { MAX_ZOOM, MIN_ZOOM } from "./geometry";
+import type { LoadedImage, PhotoAdjust, ShowDetails } from "./types";
 
 interface ControlsProps {
   photo: LoadedImage | null;
@@ -7,8 +7,6 @@ interface ControlsProps {
   onZoom: (zoom: number) => void;
   onResetPhoto: () => void;
   onUploadPhoto: () => void;
-  legibility: Legibility;
-  onLegibility: (next: Legibility) => void;
   show: ShowDetails;
   onShow: (next: ShowDetails) => void;
   busy: boolean;
@@ -21,8 +19,6 @@ export function Controls({
   onZoom,
   onResetPhoto,
   onUploadPhoto,
-  legibility,
-  onLegibility,
   show,
   onShow,
   busy,
@@ -73,27 +69,9 @@ export function Controls({
         </section>
 
         <section className="section">
-          <h2>3. Make it readable</h2>
+          <h2>3. Name your show</h2>
           <p className="section-help">
-            If the logo is hard to see, darken the photo. The logo colours stay as they are.
-          </p>
-          <Slider
-            id="darken"
-            label="Darken photo"
-            value={legibility.darken}
-            min={0}
-            max={MAX_DARKEN}
-            step={0.01}
-            display={`${Math.round(legibility.darken * 100)}%`}
-            disabled={!photo}
-            onChange={(darken) => onLegibility({ ...legibility, darken })}
-          />
-        </section>
-
-        <section className="section">
-          <h2>4. Name your show</h2>
-          <p className="section-help">
-            The preview shows show name and 00pm - 00pm until you type your own. The download uses what you type.
+            The picture shows show name and 00pm - 00pm until you type your own.
           </p>
           <div className="field">
             <label className="field-label" htmlFor="show-name">

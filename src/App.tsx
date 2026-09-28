@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import stationLogoSvg from "../images/Logo.svg?raw";
 import { Artboard } from "./Artboard";
 import { Controls } from "./Controls";
-import { DEFAULT_PHOTO, LOGO_WIDTH, MAX_DARKEN, clamp, defaultLogoAdjust, photoFrame } from "./geometry";
+import { DEFAULT_PHOTO, LOGO_WIDTH, defaultLogoAdjust, photoFrame } from "./geometry";
 import { imageFromFile, imageFromSvg, photoFileError } from "./files";
-import { DOWNLOAD_FILENAME, downloadBlob, renderPng } from "./render";
+import { DOWNLOAD_FILENAME, downloadBlob, previewShow, renderPng } from "./render";
 import type { Legibility, LoadedImage, LogoAdjust, PhotoAdjust, ShowDetails } from "./types";
 
 const INITIAL_SHOW: ShowDetails = {
@@ -18,7 +18,7 @@ export function App() {
   const [photoAdjust, setPhotoAdjust] = useState<PhotoAdjust>(DEFAULT_PHOTO);
   const [logo, setLogo] = useState<LoadedImage | null>(null);
   const [logoAdjust, setLogoAdjust] = useState<LogoAdjust | null>(null);
-  const [legibility, setLegibility] = useState<Legibility>({ darken: 0 });
+  const legibility: Legibility = { darken: 0 };
   const [show, setShow] = useState<ShowDetails>(INITIAL_SHOW);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -101,13 +101,6 @@ export function App() {
     });
   }
 
-  function updateLegibility(next: Legibility) {
-    setLegibility({
-      ...next,
-      darken: clamp(next.darken, 0, MAX_DARKEN),
-    });
-  }
-
   async function download() {
     if (!photo || busy) return;
     setBusy(true);
@@ -119,7 +112,7 @@ export function App() {
         logo: logo?.element ?? null,
         logoAdjust,
         legibility,
-        show,
+        show: previewShow(show),
       });
       downloadBlob(blob, DOWNLOAD_FILENAME);
     } catch (reason) {
@@ -169,8 +162,6 @@ export function App() {
         onZoom={updateZoom}
         onResetPhoto={() => setPhotoAdjust(DEFAULT_PHOTO)}
         onUploadPhoto={openPhotoPicker}
-        legibility={legibility}
-        onLegibility={updateLegibility}
         show={show}
         onShow={setShow}
         busy={busy}
