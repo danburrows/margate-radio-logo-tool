@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { embedSnippet, isEmbedded } from "./embed";
 import { MAX_DARKEN, MAX_ZOOM, MIN_ZOOM } from "./geometry";
 import type { Legibility, LoadedImage, PhotoAdjust } from "./types";
 
@@ -92,6 +94,7 @@ export function Controls({
             : "Upload a photo to enable download."}
         </p>
         <p className="privacy">Your photos stay in this browser. Nothing is uploaded.</p>
+        {!isEmbedded() && <EmbedCode />}
       </div>
 
       <div className="download-bar">
@@ -100,6 +103,37 @@ export function Controls({
         </button>
       </div>
     </aside>
+  );
+}
+
+function EmbedCode() {
+  const snippet = embedSnippet();
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(snippet);
+    } catch {
+      const area = document.createElement("textarea");
+      area.value = snippet;
+      document.body.appendChild(area);
+      area.select();
+      document.execCommand("copy");
+      area.remove();
+    }
+    setCopied(true);
+  }
+
+  return (
+    <div className="embed">
+      <label className="field-label" htmlFor="embed-code">
+        Embed on a website
+      </label>
+      <textarea id="embed-code" className="embed-code" readOnly rows={4} value={snippet} />
+      <button type="button" className="secondary" onClick={() => void copy()}>
+        {copied ? "Embed code copied" : "Copy embed code"}
+      </button>
+    </div>
   );
 }
 
