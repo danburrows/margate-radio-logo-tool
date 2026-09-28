@@ -6,12 +6,24 @@ export const ARTBOARD_H = 1350;
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 4;
 export const MAX_DARKEN = 0.8;
-/** Bottom-right logo from the 1080×1350 Instagram post frame. */
-export const LOGO_X = 740;
-export const LOGO_Y = 1044;
-export const LOGO_WIDTH = 292;
-export const LOGO_HEIGHT = 258;
-export const MIN_LOGO_WIDTH = 180;
+/** Bottom lockup from the 1080×1350 post: text bar on the left, logo on the right. */
+export const LOGO_X = 917;
+export const LOGO_Y = 1209;
+export const LOGO_WIDTH = 87;
+export const LOGO_HEIGHT = 77;
+export const MIN_LOGO_WIDTH = 80;
+
+export const SHOW_BAR = { x: 68, y: 1201, w: 944, h: 93 };
+/** White rule on the text column, 8px inside the black bar, stopping before the logo. */
+export const SHOW_RULE = { x: 76, y: 1209, w: 837 };
+export const SHOW_NAME_X = 84;
+export const SHOW_NAME_Y = 1226;
+export const SHOW_NAME_MAX_WIDTH = 820;
+export const SHOW_NAME_SIZE = 21;
+export const SHOW_NAME_LINE_HEIGHT = 22;
+export const SHOW_TIME_X = 84;
+export const SHOW_TIME_Y = 1259;
+export const SHOW_TIME_SIZE = 21;
 
 export const DEFAULT_PHOTO: PhotoAdjust = {
   zoom: 1,

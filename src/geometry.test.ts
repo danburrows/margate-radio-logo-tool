@@ -71,6 +71,6 @@ test("the logo is fixed to the bottom-right reference", () => {
   assert.ok(Math.abs(frame.h / frame.w - 82 / 92) < 1e-9);
   assert.ok(Math.abs(frame.x - LOGO_X) < 1e-6);
   assert.ok(Math.abs(frame.y - LOGO_Y) < 1e-6);
-  assert.ok(Math.abs(ARTBOARD_W - (frame.x + frame.w) - 48) < 1e-6);
+  assert.ok(Math.abs(ARTBOARD_W - (frame.x + frame.w) - 76) < 1e-6);
 });
 

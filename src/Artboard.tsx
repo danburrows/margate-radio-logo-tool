@@ -1,7 +1,7 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ARTBOARD_H, ARTBOARD_W, photoFrame } from "./geometry";
-import { renderArtboard } from "./render";
-import type { Legibility, LoadedImage, LogoAdjust, PhotoAdjust } from "./types";
+import { ensureShowFonts, previewShow, renderArtboard } from "./render";
+import type { Legibility, LoadedImage, LogoAdjust, PhotoAdjust, ShowDetails } from "./types";
 
 interface ArtboardProps {
   photo: LoadedImage | null;
@@ -9,6 +9,7 @@ interface ArtboardProps {
   logo: LoadedImage | null;
   logoAdjust: LogoAdjust | null;
   legibility: Legibility;
+  show: ShowDetails;
   onPhotoAdjust: (next: PhotoAdjust) => void;
 }
 
@@ -26,6 +27,7 @@ export function Artboard({
   logo,
   logoAdjust,
   legibility,
+  show,
   onPhotoAdjust,
 }: ArtboardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
@@ -34,9 +36,20 @@ export function Artboard({
   const photoRef = useRef(photo);
   const photoAdjustRef = useRef(photoAdjust);
   const [dragging, setDragging] = useState(false);
+  const [fontsReady, setFontsReady] = useState(false);
 
   photoRef.current = photo;
   photoAdjustRef.current = photoAdjust;
+
+  useEffect(() => {
+    let cancelled = false;
+    ensureShowFonts().then(() => {
+      if (!cancelled) setFontsReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -51,8 +64,9 @@ export function Artboard({
       logo: logo?.element ?? null,
       logoAdjust,
       legibility,
+      show: previewShow(show),
     });
-  }, [photo, photoAdjust, logo, logoAdjust, legibility]);
+  }, [photo, photoAdjust, logo, logoAdjust, legibility, show, fontsReady]);
 
   function artboardScale(): number {
     const board = boardRef.current;

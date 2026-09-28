@@ -474,19 +474,28 @@ html.is-embedded .app {
   border-radius: 0;
 }
 
-.embed {
-  margin-top: 18px;
-}
-
-.embed-code {
+.text-input {
   display: block;
   width: 100%;
-  margin-top: 8px;
+  margin-top: 6px;
+  min-height: 31px;
   padding: 8px 10px;
   border: 0;
-  border-radius: 8px;
-  resize: vertical;
+  border-radius: 5px;
   background: #242424;
-  color: rgba(255, 255, 255, 0.8);
-  font: 11px/1.4 ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color: #fff;
+}
+
+.text-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.time-row .field {
+  margin-bottom: 0;
 }

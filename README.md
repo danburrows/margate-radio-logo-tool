@@ -23,7 +23,7 @@ Paste this on another page. The tool fills the frame, and photos still stay in t
 <iframe src="https://danburrows.github.io/margate-radio-logo-tool/?embed=1" title="Margate Radio Post Maker" style="width:100%;height:800px;border:0"></iframe>
 ```
 
-The live site also has a button that copies this snippet. Add `?embed=1` so the page drops its outer margin and fills the iframe. An iframe without that parameter still switches to the same layout.
+Add `?embed=1` so the page drops its outer margin and fills the iframe. An iframe without that parameter still switches to the same layout. The tool does not show this snippet to volunteers.
 
 ## Production build
 

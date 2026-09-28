@@ -6,10 +6,3 @@ export function isEmbedded(): boolean {
     return true;
   }
 }
-
-export function embedSnippet(): string {
-  const url = new URL(window.location.href);
-  url.searchParams.set("embed", "1");
-  url.hash = "";
-  return `<iframe src="${url.toString()}" title="Margate Radio Post Maker" style="width:100%;height:800px;border:0"></iframe>`;
-}

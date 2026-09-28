@@ -5,10 +5,12 @@ import { Controls } from "./Controls";
 import { DEFAULT_PHOTO, LOGO_WIDTH, MAX_DARKEN, clamp, defaultLogoAdjust, photoFrame } from "./geometry";
 import { imageFromFile, imageFromSvg, photoFileError } from "./files";
 import { DOWNLOAD_FILENAME, downloadBlob, renderPng } from "./render";
-import type { Legibility, LoadedImage, LogoAdjust, PhotoAdjust } from "./types";
+import type { Legibility, LoadedImage, LogoAdjust, PhotoAdjust, ShowDetails } from "./types";
 
-const INITIAL_LEGIBILITY: Legibility = {
-  darken: 0,
+const INITIAL_SHOW: ShowDetails = {
+  name: "",
+  start: "",
+  end: "",
 };
 
 export function App() {
@@ -16,7 +18,8 @@ export function App() {
   const [photoAdjust, setPhotoAdjust] = useState<PhotoAdjust>(DEFAULT_PHOTO);
   const [logo, setLogo] = useState<LoadedImage | null>(null);
   const [logoAdjust, setLogoAdjust] = useState<LogoAdjust | null>(null);
-  const [legibility, setLegibility] = useState<Legibility>(INITIAL_LEGIBILITY);
+  const [legibility, setLegibility] = useState<Legibility>({ darken: 0 });
+  const [show, setShow] = useState<ShowDetails>(INITIAL_SHOW);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -116,6 +119,7 @@ export function App() {
         logo: logo?.element ?? null,
         logoAdjust,
         legibility,
+        show,
       });
       downloadBlob(blob, DOWNLOAD_FILENAME);
     } catch (reason) {
@@ -142,7 +146,7 @@ export function App() {
             <p className="eyebrow">Margate Radio</p>
             <h1>Post Maker</h1>
             <p className="lede">
-              Upload a photo and download a 1080 × 1350 picture with the station logo.
+              Upload a photo, add your show, and download a 1080 × 1350 picture.
             </p>
           </header>
           <Artboard
@@ -151,6 +155,7 @@ export function App() {
             logo={logo}
             logoAdjust={logoAdjust}
             legibility={legibility}
+            show={show}
             onPhotoAdjust={setPhotoAdjust}
           />
           <p className="size-caption">1080 × 1350</p>
@@ -166,6 +171,8 @@ export function App() {
         onUploadPhoto={openPhotoPicker}
         legibility={legibility}
         onLegibility={updateLegibility}
+        show={show}
+        onShow={setShow}
         busy={busy}
         onDownload={() => void download()}
       />

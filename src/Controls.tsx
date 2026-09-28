@@ -1,7 +1,5 @@
-import { useState } from "react";
-import { embedSnippet, isEmbedded } from "./embed";
 import { MAX_DARKEN, MAX_ZOOM, MIN_ZOOM } from "./geometry";
-import type { Legibility, LoadedImage, PhotoAdjust } from "./types";
+import type { Legibility, LoadedImage, PhotoAdjust, ShowDetails } from "./types";
 
 interface ControlsProps {
   photo: LoadedImage | null;
@@ -11,6 +9,8 @@ interface ControlsProps {
   onUploadPhoto: () => void;
   legibility: Legibility;
   onLegibility: (next: Legibility) => void;
+  show: ShowDetails;
+  onShow: (next: ShowDetails) => void;
   busy: boolean;
   onDownload: () => void;
 }
@@ -23,6 +23,8 @@ export function Controls({
   onUploadPhoto,
   legibility,
   onLegibility,
+  show,
+  onShow,
   busy,
   onDownload,
 }: ControlsProps) {
@@ -88,13 +90,65 @@ export function Controls({
           />
         </section>
 
+        <section className="section">
+          <h2>4. Name your show</h2>
+          <p className="section-help">
+            The preview shows show name and 00pm - 00pm until you type your own. The download uses what you type.
+          </p>
+          <div className="field">
+            <label className="field-label" htmlFor="show-name">
+              Show name
+            </label>
+            <input
+              id="show-name"
+              className="text-input"
+              type="text"
+              placeholder="show name"
+              value={show.name}
+              maxLength={80}
+              onChange={(event) => onShow({ ...show, name: event.target.value })}
+            />
+          </div>
+          <div className="time-row">
+            <div className="field">
+              <label className="field-label" htmlFor="show-start">
+                Start time
+              </label>
+              <input
+                id="show-start"
+                className="text-input"
+                type="text"
+                inputMode="text"
+                placeholder="12pm"
+                value={show.start}
+                maxLength={20}
+                onChange={(event) => onShow({ ...show, start: event.target.value })}
+              />
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="show-end">
+                End time
+              </label>
+              <input
+                id="show-end"
+                className="text-input"
+                type="text"
+                inputMode="text"
+                placeholder="2pm"
+                value={show.end}
+                maxLength={20}
+                onChange={(event) => onShow({ ...show, end: event.target.value })}
+              />
+            </div>
+          </div>
+        </section>
+
         <p className="hint download-note">
           {photo
             ? "The PNG is 1080 × 1350. Editing outlines are left out."
             : "Upload a photo to enable download."}
         </p>
         <p className="privacy">Your photos stay in this browser. Nothing is uploaded.</p>
-        {!isEmbedded() && <EmbedCode />}
       </div>
 
       <div className="download-bar">
@@ -103,37 +157,6 @@ export function Controls({
         </button>
       </div>
     </aside>
-  );
-}
-
-function EmbedCode() {
-  const snippet = embedSnippet();
-  const [copied, setCopied] = useState(false);
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(snippet);
-    } catch {
-      const area = document.createElement("textarea");
-      area.value = snippet;
-      document.body.appendChild(area);
-      area.select();
-      document.execCommand("copy");
-      area.remove();
-    }
-    setCopied(true);
-  }
-
-  return (
-    <div className="embed">
-      <label className="field-label" htmlFor="embed-code">
-        Embed on a website
-      </label>
-      <textarea id="embed-code" className="embed-code" readOnly rows={4} value={snippet} />
-      <button type="button" className="secondary" onClick={() => void copy()}>
-        {copied ? "Embed code copied" : "Copy embed code"}
-      </button>
-    </div>
   );
 }
 

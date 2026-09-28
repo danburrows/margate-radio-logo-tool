@@ -22,6 +22,12 @@ export interface LoadedImage {
   objectUrl: string | null;
 }
 
+export interface ShowDetails {
+  name: string;
+  start: string;
+  end: string;
+}
+
 export interface Rect {
   x: number;
   y: number;
