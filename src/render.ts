@@ -2,6 +2,8 @@ import {
   ARTBOARD_H,
   ARTBOARD_W,
   SHOW_BAR,
+  SHOW_HYPHEN_LINE_HEIGHT,
+  SHOW_HYPHEN_SIZE,
   SHOW_NAME_LINE_HEIGHT,
   SHOW_NAME_MAX_WIDTH,
   SHOW_NAME_SIZE,
@@ -12,6 +14,8 @@ import {
   SHOW_TIME_X,
   SHOW_TIME_Y,
   STATION_LABEL_RIGHT,
+  STATION_LABEL_SIZE,
+  STATION_LABEL_Y,
   clamp,
   logoFrame,
   photoFrame,
@@ -41,6 +45,45 @@ function drawChecker(ctx: CanvasRenderingContext2D) {
       ctx.fillRect(x, y, CHECKER_SIZE, CHECKER_SIZE);
     }
   }
+}
+
+const TEXT_SUPERSAMPLE = 3;
+const TEXT_PAD = 4;
+
+/** Draw type at a higher resolution, then scale it down for smoother edges. */
+function fillTextSmooth(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
+  const width = ctx.measureText(text).width;
+  const fontSize = Number.parseFloat(ctx.font) || SHOW_NAME_SIZE;
+  const boxW = Math.ceil(width + TEXT_PAD * 2);
+  const boxH = Math.ceil(fontSize * 1.4 + TEXT_PAD * 2);
+  const off = document.createElement("canvas");
+  off.width = boxW * TEXT_SUPERSAMPLE;
+  off.height = boxH * TEXT_SUPERSAMPLE;
+  const offCtx = off.getContext("2d");
+  if (!offCtx) {
+    ctx.fillText(text, x, y);
+    return;
+  }
+
+  offCtx.setTransform(TEXT_SUPERSAMPLE, 0, 0, TEXT_SUPERSAMPLE, 0, 0);
+  offCtx.font = ctx.font;
+  offCtx.fillStyle = ctx.fillStyle;
+  offCtx.letterSpacing = ctx.letterSpacing;
+  offCtx.textAlign = "left";
+  offCtx.textBaseline = "top";
+  offCtx.fillText(text, TEXT_PAD, TEXT_PAD);
+
+  let destX = x - TEXT_PAD;
+  if (ctx.textAlign === "right") destX = x - width - TEXT_PAD;
+  else if (ctx.textAlign === "center") destX = x - width / 2 - TEXT_PAD;
+
+  const smoothing = ctx.imageSmoothingEnabled;
+  const quality = ctx.imageSmoothingQuality;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(off, destX, y - TEXT_PAD, boxW, boxH);
+  ctx.imageSmoothingEnabled = smoothing;
+  ctx.imageSmoothingQuality = quality;
 }
 
 function snappedDrawRect(frame: Rect): Rect {
@@ -147,6 +190,31 @@ function showTimeLine(show: ShowDetails): string {
   return start || end;
 }
 
+/** Draw the time with a smaller hyphen, bottom-aligned to the time line. */
+function drawTimeLine(ctx: CanvasRenderingContext2D, show: ShowDetails, x: number, y: number) {
+  const start = show.start.trim().toUpperCase();
+  const end = show.end.trim().toUpperCase();
+  const gap = 4;
+  let cursor = x;
+
+  ctx.textAlign = "left";
+  if (start) {
+    ctx.font = `400 ${SHOW_TIME_SIZE}px "Space Mono"`;
+    fillTextSmooth(ctx, start, cursor, y);
+    cursor += ctx.measureText(start).width;
+  }
+  if (start && end) {
+    cursor += gap;
+    ctx.font = `400 ${SHOW_HYPHEN_SIZE}px "Space Mono"`;
+    fillTextSmooth(ctx, "-", cursor, y + SHOW_NAME_LINE_HEIGHT - SHOW_HYPHEN_LINE_HEIGHT);
+    cursor += ctx.measureText("-").width + gap;
+  }
+  if (end) {
+    ctx.font = `400 ${SHOW_TIME_SIZE}px "Space Mono"`;
+    fillTextSmooth(ctx, end, cursor, y);
+  }
+}
+
 function wrapShowName(ctx: CanvasRenderingContext2D, name: string): string[] {
   const words = name.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
@@ -207,23 +275,26 @@ function drawShow(ctx: CanvasRenderingContext2D, show: ShowDetails, shift: numbe
 
   lines.forEach((line, index) => {
     ctx.font = `400 ${SHOW_NAME_SIZE}px "Space Mono"`;
-    ctx.fillText(line, SHOW_NAME_X, nameY + index * SHOW_NAME_LINE_HEIGHT);
+    fillTextSmooth(ctx, line, SHOW_NAME_X, nameY + index * SHOW_NAME_LINE_HEIGHT);
   });
 
   if (times) {
-    ctx.font = `400 ${SHOW_TIME_SIZE}px "Space Mono"`;
-    ctx.fillText(times, SHOW_TIME_X, timeY);
+    drawTimeLine(ctx, show, SHOW_TIME_X, timeY);
   }
 
-  ctx.font = `400 ${SHOW_TIME_SIZE}px "Space Mono"`;
+  ctx.font = `400 ${STATION_LABEL_SIZE}px "Space Mono"`;
   ctx.textAlign = "right";
-  ctx.fillText(STATION_LABEL, STATION_LABEL_RIGHT, timeY);
+  fillTextSmooth(ctx, STATION_LABEL, STATION_LABEL_RIGHT, STATION_LABEL_Y);
   ctx.textAlign = "left";
 }
 
 export async function ensureShowFonts(): Promise<void> {
   if (!("fonts" in document)) return;
-  await document.fonts.load(`400 ${SHOW_NAME_SIZE}px "Space Mono"`);
+  await Promise.all([
+    document.fonts.load(`400 ${SHOW_NAME_SIZE}px "Space Mono"`),
+    document.fonts.load(`400 ${SHOW_HYPHEN_SIZE}px "Space Mono"`),
+    document.fonts.load(`400 ${STATION_LABEL_SIZE}px "Space Mono"`),
+  ]);
 }
 
 export async function renderPng(input: RenderInput): Promise<Blob> {
