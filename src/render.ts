@@ -1,6 +1,25 @@
+import facesMarksUrl from "../images/faces-marks.svg?url";
 import {
   ARTBOARD_H,
   ARTBOARD_W,
+  FACES_LOGO,
+  FACES_LOGO_BAR,
+  FACES_MARGATE,
+  FACES_MARKS,
+  FACES_NAME_BAR,
+  FACES_NAME_MAX_WIDTH,
+  FACES_NAME_SIZE,
+  FACES_NAME_TRACKING,
+  FACES_NAME_X,
+  FACES_NAME_Y,
+  FACES_PHOTO,
+  FACES_RADIO,
+  FACES_SUBTITLE,
+  FACES_SUBTITLE_SIZE,
+  FACES_WORD_SIZE,
+  FACES_WORD_TRACKING,
+  FACES_WORD_X,
+  FACES_WORD_Y,
   SHOW_BAR,
   SHOW_HYPHEN_LINE_HEIGHT,
   SHOW_HYPHEN_SIZE,
@@ -10,6 +29,7 @@ import {
   SHOW_NAME_X,
   SHOW_NAME_Y,
   SHOW_RULE,
+  SHOW_TIME_LINE_HEIGHT,
   SHOW_TIME_SIZE,
   SHOW_TIME_X,
   SHOW_TIME_Y,
@@ -18,11 +38,13 @@ import {
   STATION_LABEL_Y,
   clamp,
   logoFrame,
+  photoBounds,
   photoFrame,
 } from "./geometry";
-import type { Legibility, LogoAdjust, PhotoAdjust, Rect, ShowDetails } from "./types";
+import type { Legibility, LogoAdjust, PhotoAdjust, Rect, ShowDetails, TemplateId } from "./types";
 
 export interface RenderInput {
+  template: TemplateId;
   photo: HTMLImageElement | null;
   photoAdjust: PhotoAdjust;
   logo: HTMLImageElement | null;
@@ -50,10 +72,22 @@ function drawChecker(ctx: CanvasRenderingContext2D) {
 const TEXT_SUPERSAMPLE = 3;
 const TEXT_PAD = 4;
 
+function fontPixelSize(font: string): number {
+  const match = /(\d+(?:\.\d+)?)px/.exec(font);
+  return match ? Number(match[1]) : SHOW_NAME_SIZE;
+}
+
+type StretchableContext = CanvasRenderingContext2D & { fontStretch?: string };
+
+function setArchivo(ctx: CanvasRenderingContext2D, size: number) {
+  ctx.font = `900 ${size}px Archivo`;
+  (ctx as StretchableContext).fontStretch = "expanded";
+}
+
 /** Draw type at a higher resolution, then scale it down for smoother edges. */
 function fillTextSmooth(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
   const width = ctx.measureText(text).width;
-  const fontSize = Number.parseFloat(ctx.font) || SHOW_NAME_SIZE;
+  const fontSize = fontPixelSize(ctx.font);
   const boxW = Math.ceil(width + TEXT_PAD * 2);
   const boxH = Math.ceil(fontSize * 1.4 + TEXT_PAD * 2);
   const off = document.createElement("canvas");
@@ -67,6 +101,8 @@ function fillTextSmooth(ctx: CanvasRenderingContext2D, text: string, x: number, 
 
   offCtx.setTransform(TEXT_SUPERSAMPLE, 0, 0, TEXT_SUPERSAMPLE, 0, 0);
   offCtx.font = ctx.font;
+  const stretch = (ctx as StretchableContext).fontStretch;
+  if (stretch) (offCtx as StretchableContext).fontStretch = stretch;
   offCtx.fillStyle = ctx.fillStyle;
   offCtx.letterSpacing = ctx.letterSpacing;
   offCtx.textAlign = "left";
@@ -102,6 +138,11 @@ export function renderArtboard(ctx: CanvasRenderingContext2D, input: RenderInput
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, ARTBOARD_W, ARTBOARD_H);
 
+  if (input.template === "faces") {
+    drawFaces(ctx, input);
+    return;
+  }
+
   if (input.photo) {
     ctx.fillStyle = "#14120f";
     ctx.fillRect(0, 0, ARTBOARD_W, ARTBOARD_H);
@@ -109,6 +150,7 @@ export function renderArtboard(ctx: CanvasRenderingContext2D, input: RenderInput
       input.photo.naturalWidth,
       input.photo.naturalHeight,
       input.photoAdjust,
+      photoBounds(input.template),
     );
     const draw = snappedDrawRect(frame);
     ctx.imageSmoothingEnabled = true;
@@ -171,16 +213,127 @@ function drawLogoBars(ctx: CanvasRenderingContext2D, box: Rect) {
 }
 
 const PLACEHOLDER_NAME = "show name";
+const FACES_PLACEHOLDER_NAME = "Show name";
 const PLACEHOLDER_TIME = "00pm";
 const STATION_LABEL = "MARGATE RADIO";
 
+let facesMarksImage: HTMLImageElement | null = null;
+
+function loadFacesMarks(): Promise<void> {
+  if (facesMarksImage) return Promise.resolve();
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      facesMarksImage = image;
+      resolve();
+    };
+    image.onerror = () => resolve();
+    image.src = facesMarksUrl;
+  });
+}
+
 /** Sample lockup from the design, used only while a field is still empty. */
-export function previewShow(show: ShowDetails): ShowDetails {
+export function previewShow(show: ShowDetails, template: TemplateId = "show"): ShowDetails {
+  if (template === "faces") {
+    return {
+      name: show.name.trim() ? show.name : FACES_PLACEHOLDER_NAME,
+      start: show.start,
+      end: show.end,
+    };
+  }
   return {
     name: show.name.trim() ? show.name : PLACEHOLDER_NAME,
     start: show.start.trim() ? show.start : PLACEHOLDER_TIME,
     end: show.end.trim() ? show.end : PLACEHOLDER_TIME,
   };
+}
+
+function drawFaces(ctx: CanvasRenderingContext2D, input: RenderInput) {
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, ARTBOARD_W, ARTBOARD_H);
+
+  if (facesMarksImage) {
+    const box = FACES_MARKS;
+    ctx.save();
+    ctx.translate(box.x + box.w / 2, box.y + box.h / 2);
+    ctx.rotate(Math.PI);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(facesMarksImage, -box.w / 2, -box.h / 2, box.w, box.h);
+    ctx.restore();
+  }
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(FACES_PHOTO.x, FACES_PHOTO.y, FACES_PHOTO.w, FACES_PHOTO.h);
+  ctx.clip();
+  if (input.photo) {
+    ctx.fillStyle = "#14120f";
+    ctx.fillRect(FACES_PHOTO.x, FACES_PHOTO.y, FACES_PHOTO.w, FACES_PHOTO.h);
+    const frame = photoFrame(
+      input.photo.naturalWidth,
+      input.photo.naturalHeight,
+      input.photoAdjust,
+      FACES_PHOTO,
+    );
+    const draw = snappedDrawRect(frame);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(input.photo, draw.x, draw.y, draw.w, draw.h);
+  } else {
+    drawChecker(ctx);
+  }
+  const darken = clamp(input.legibility.darken, 0, 1);
+  if (darken > 0) {
+    ctx.fillStyle = `rgba(0,0,0,${darken})`;
+    ctx.fillRect(FACES_PHOTO.x, FACES_PHOTO.y, FACES_PHOTO.w, FACES_PHOTO.h);
+  }
+  ctx.restore();
+
+  setArchivo(ctx, FACES_WORD_SIZE);
+  ctx.fillStyle = "#000";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.letterSpacing = `${FACES_WORD_TRACKING}px`;
+  fillTextSmooth(ctx, "Faces", FACES_WORD_X, FACES_WORD_Y);
+
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(FACES_SUBTITLE.x, FACES_SUBTITLE.y, FACES_SUBTITLE.w, FACES_SUBTITLE.h);
+  ctx.fillStyle = "#000";
+  ctx.font = `400 ${FACES_SUBTITLE_SIZE}px "Space Mono"`;
+  ctx.letterSpacing = "0px";
+  ctx.textAlign = "left";
+  fillTextSmooth(ctx, "MARGATE", FACES_MARGATE.x, FACES_MARGATE.y);
+  fillTextSmooth(ctx, "RADIO", FACES_RADIO.x, FACES_RADIO.y);
+
+  drawFacesName(ctx, input.show.name.trim() || FACES_PLACEHOLDER_NAME);
+
+  if (input.logo) {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(FACES_LOGO_BAR.x, FACES_LOGO_BAR.y, FACES_LOGO_BAR.w, FACES_LOGO_BAR.h);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(input.logo, FACES_LOGO.x, FACES_LOGO.y, FACES_LOGO.w, FACES_LOGO.h);
+    drawLogoBars(ctx, FACES_LOGO);
+  }
+}
+
+function drawFacesName(ctx: CanvasRenderingContext2D, name: string) {
+  ctx.fillStyle = "#000";
+  ctx.fillRect(FACES_NAME_BAR.x, FACES_NAME_BAR.y, FACES_NAME_BAR.w, FACES_NAME_BAR.h);
+
+  let size = FACES_NAME_SIZE;
+  setArchivo(ctx, size);
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.letterSpacing = `${FACES_NAME_TRACKING}px`;
+  while (size > 18 && ctx.measureText(name).width > FACES_NAME_MAX_WIDTH) {
+    size -= 1;
+    setArchivo(ctx, size);
+    ctx.letterSpacing = `${(FACES_NAME_TRACKING * size) / FACES_NAME_SIZE}px`;
+  }
+  fillTextSmooth(ctx, name, FACES_NAME_X, FACES_NAME_Y);
 }
 
 function showTimeLine(show: ShowDetails): string {
@@ -190,12 +343,13 @@ function showTimeLine(show: ShowDetails): string {
   return start || end;
 }
 
-/** Draw the time with a smaller hyphen, bottom-aligned to the time line. */
+/** Draw the time under a taller hyphen, with the times bottom-aligned to it. */
 function drawTimeLine(ctx: CanvasRenderingContext2D, show: ShowDetails, x: number, y: number) {
   const start = show.start.trim().toUpperCase();
   const end = show.end.trim().toUpperCase();
   const gap = 4;
   let cursor = x;
+  const hyphenY = y - (SHOW_HYPHEN_LINE_HEIGHT - SHOW_TIME_LINE_HEIGHT);
 
   ctx.textAlign = "left";
   if (start) {
@@ -206,7 +360,7 @@ function drawTimeLine(ctx: CanvasRenderingContext2D, show: ShowDetails, x: numbe
   if (start && end) {
     cursor += gap;
     ctx.font = `400 ${SHOW_HYPHEN_SIZE}px "Space Mono"`;
-    fillTextSmooth(ctx, "-", cursor, y + SHOW_NAME_LINE_HEIGHT - SHOW_HYPHEN_LINE_HEIGHT);
+    fillTextSmooth(ctx, "-", cursor, hyphenY);
     cursor += ctx.measureText("-").width + gap;
   }
   if (end) {
@@ -289,12 +443,18 @@ function drawShow(ctx: CanvasRenderingContext2D, show: ShowDetails, shift: numbe
 }
 
 export async function ensureShowFonts(): Promise<void> {
-  if (!("fonts" in document)) return;
-  await Promise.all([
-    document.fonts.load(`400 ${SHOW_NAME_SIZE}px "Space Mono"`),
-    document.fonts.load(`400 ${SHOW_HYPHEN_SIZE}px "Space Mono"`),
-    document.fonts.load(`400 ${STATION_LABEL_SIZE}px "Space Mono"`),
-  ]);
+  const fonts =
+    "fonts" in document
+      ? Promise.all([
+          document.fonts.load(`400 ${SHOW_NAME_SIZE}px "Space Mono"`),
+          document.fonts.load(`400 ${SHOW_HYPHEN_SIZE}px "Space Mono"`),
+          document.fonts.load(`400 ${STATION_LABEL_SIZE}px "Space Mono"`),
+          document.fonts.load(`400 ${FACES_SUBTITLE_SIZE}px "Space Mono"`),
+          document.fonts.load(`900 ${FACES_NAME_SIZE}px Archivo`),
+          document.fonts.load(`900 ${FACES_WORD_SIZE}px Archivo`),
+        ])
+      : Promise.resolve();
+  await Promise.all([fonts, loadFacesMarks()]);
 }
 
 export async function renderPng(input: RenderInput): Promise<Blob> {

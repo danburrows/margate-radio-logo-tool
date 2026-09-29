@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import stationLogoSvg from "../images/Logo.svg?raw";
 import { Artboard } from "./Artboard";
 import { Controls } from "./Controls";
-import { DEFAULT_PHOTO, LOGO_WIDTH, defaultLogoAdjust, photoFrame } from "./geometry";
+import { DEFAULT_PHOTO, LOGO_WIDTH, defaultLogoAdjust, photoBounds, photoFrame } from "./geometry";
 import { imageFromFile, imageFromSvg, photoFileError } from "./files";
 import { DOWNLOAD_FILENAME, downloadBlob, previewShow, renderPng } from "./render";
-import type { Legibility, LoadedImage, LogoAdjust, PhotoAdjust, ShowDetails } from "./types";
+import type { Legibility, LoadedImage, LogoAdjust, PhotoAdjust, ShowDetails, TemplateId } from "./types";
 
 const INITIAL_SHOW: ShowDetails = {
   name: "",
@@ -20,6 +20,7 @@ export function App() {
   const [logoAdjust, setLogoAdjust] = useState<LogoAdjust | null>(null);
   const legibility: Legibility = { darken: 0 };
   const [show, setShow] = useState<ShowDetails>(INITIAL_SHOW);
+  const [template, setTemplate] = useState<TemplateId>("show");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -93,10 +94,15 @@ export function App() {
   function updateZoom(zoom: number) {
     if (!photo) return;
     setPhotoAdjust((current) => {
-      const frame = photoFrame(photo.element.naturalWidth, photo.element.naturalHeight, {
-        ...current,
-        zoom,
-      });
+      const frame = photoFrame(
+        photo.element.naturalWidth,
+        photo.element.naturalHeight,
+        {
+          ...current,
+          zoom,
+        },
+        photoBounds(template),
+      );
       return { zoom: frame.zoom, offsetX: frame.offsetX, offsetY: frame.offsetY };
     });
   }
@@ -111,8 +117,9 @@ export function App() {
         photoAdjust,
         logo: logo?.element ?? null,
         logoAdjust,
+        template,
         legibility,
-        show: previewShow(show),
+        show: previewShow(show, template),
       });
       downloadBlob(blob, DOWNLOAD_FILENAME);
     } catch (reason) {
@@ -135,9 +142,20 @@ export function App() {
 
       <main className="stage">
         <div className="stage-column">
+          <label className="template-picker">
+            Template
+            <select
+              value={template}
+              aria-label="Template"
+              onChange={(event) => setTemplate(event.target.value as TemplateId)}
+            >
+              <option value="show">Show</option>
+              <option value="faces">Faces</option>
+            </select>
+          </label>
           <header className="masthead">
             <p className="eyebrow">Margate Radio</p>
-            <h1>Post Maker</h1>
+            <h1>Template Tool</h1>
             <p className="lede">
               Upload a photo, add your show, and download a 1080 × 1350 picture.
             </p>
@@ -147,6 +165,7 @@ export function App() {
             photoAdjust={photoAdjust}
             logo={logo}
             logoAdjust={logoAdjust}
+            template={template}
             legibility={legibility}
             show={show}
             onPhotoAdjust={setPhotoAdjust}
@@ -162,6 +181,7 @@ export function App() {
         onZoom={updateZoom}
         onResetPhoto={() => setPhotoAdjust(DEFAULT_PHOTO)}
         onUploadPhoto={openPhotoPicker}
+        template={template}
         show={show}
         onShow={setShow}
         busy={busy}

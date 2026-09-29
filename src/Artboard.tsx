@@ -1,13 +1,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ARTBOARD_H, ARTBOARD_W, photoFrame } from "./geometry";
+import { ARTBOARD_H, ARTBOARD_W, photoBounds, photoFrame } from "./geometry";
 import { ensureShowFonts, previewShow, renderArtboard } from "./render";
-import type { Legibility, LoadedImage, LogoAdjust, PhotoAdjust, ShowDetails } from "./types";
+import type { Legibility, LoadedImage, LogoAdjust, PhotoAdjust, ShowDetails, TemplateId } from "./types";
 
 interface ArtboardProps {
   photo: LoadedImage | null;
   photoAdjust: PhotoAdjust;
   logo: LoadedImage | null;
   logoAdjust: LogoAdjust | null;
+  template: TemplateId;
   legibility: Legibility;
   show: ShowDetails;
   onPhotoAdjust: (next: PhotoAdjust) => void;
@@ -26,6 +27,7 @@ export function Artboard({
   photoAdjust,
   logo,
   logoAdjust,
+  template,
   legibility,
   show,
   onPhotoAdjust,
@@ -35,11 +37,13 @@ export function Artboard({
   const dragRef = useRef<DragState | null>(null);
   const photoRef = useRef(photo);
   const photoAdjustRef = useRef(photoAdjust);
+  const templateRef = useRef(template);
   const [dragging, setDragging] = useState(false);
   const [fontsReady, setFontsReady] = useState(false);
 
   photoRef.current = photo;
   photoAdjustRef.current = photoAdjust;
+  templateRef.current = template;
 
   useEffect(() => {
     let cancelled = false;
@@ -62,11 +66,12 @@ export function Artboard({
       photo: photo?.element ?? null,
       photoAdjust,
       logo: logo?.element ?? null,
+      template,
       logoAdjust,
       legibility,
-      show: previewShow(show),
+      show: previewShow(show, template),
     });
-  }, [photo, photoAdjust, logo, logoAdjust, legibility, show, fontsReady]);
+  }, [photo, photoAdjust, logo, logoAdjust, template, legibility, show, fontsReady]);
 
   function artboardScale(): number {
     const board = boardRef.current;
@@ -100,11 +105,16 @@ export function Artboard({
     const scale = artboardScale();
     const dx = (event.clientX - drag.startX) / scale;
     const dy = (event.clientY - drag.startY) / scale;
-    const frame = photoFrame(currentPhoto.element.naturalWidth, currentPhoto.element.naturalHeight, {
-      zoom: photoAdjustRef.current.zoom,
-      offsetX: drag.originX + dx,
-      offsetY: drag.originY + dy,
-    });
+    const frame = photoFrame(
+      currentPhoto.element.naturalWidth,
+      currentPhoto.element.naturalHeight,
+      {
+        zoom: photoAdjustRef.current.zoom,
+        offsetX: drag.originX + dx,
+        offsetY: drag.originY + dy,
+      },
+      photoBounds(templateRef.current),
+    );
     onPhotoAdjust({ zoom: frame.zoom, offsetX: frame.offsetX, offsetY: frame.offsetY });
   }
 

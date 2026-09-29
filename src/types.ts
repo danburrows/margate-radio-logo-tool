@@ -28,6 +28,8 @@ export interface ShowDetails {
   end: string;
 }
 
+export type TemplateId = "show" | "faces";
+
 export interface Rect {
   x: number;
   y: number;

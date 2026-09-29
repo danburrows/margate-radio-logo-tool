@@ -1,8 +1,8 @@
-# Margate Radio Post Maker
+# Margate Radio Template Tool
 
-Live site: https://danburrows.github.io/margate-radio-logo-tool/
+This branch is not published to GitHub Pages. The live Post Maker is https://danburrows.github.io/margate-radio-logo-tool/
 
-A browser tool for station volunteers. Upload a photo, place the Margate Radio logo, and download a still PNG at 1080 × 1350. Photos are edited only in the browser — nothing is uploaded.
+A browser tool for station volunteers. Choose a template, upload a photo, and download a still PNG at 1080 × 1350. Photos are edited only in the browser — nothing is uploaded.
 
 The logo in `images/Logo.svg` loads on its own and stays fixed on the picture.
 

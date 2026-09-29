@@ -1,5 +1,5 @@
 import { MAX_ZOOM, MIN_ZOOM } from "./geometry";
-import type { LoadedImage, PhotoAdjust, ShowDetails } from "./types";
+import type { LoadedImage, PhotoAdjust, ShowDetails, TemplateId } from "./types";
 
 interface ControlsProps {
   photo: LoadedImage | null;
@@ -7,6 +7,7 @@ interface ControlsProps {
   onZoom: (zoom: number) => void;
   onResetPhoto: () => void;
   onUploadPhoto: () => void;
+  template: TemplateId;
   show: ShowDetails;
   onShow: (next: ShowDetails) => void;
   busy: boolean;
@@ -19,6 +20,7 @@ export function Controls({
   onZoom,
   onResetPhoto,
   onUploadPhoto,
+  template,
   show,
   onShow,
   busy,
@@ -71,7 +73,9 @@ export function Controls({
         <section className="section">
           <h2>3. Name your show</h2>
           <p className="section-help">
-            The picture shows show name and 00pm - 00pm until you type your own.
+            {template === "faces"
+              ? "The picture shows Show name until you type your own."
+              : "The picture shows show name and 00pm - 00pm until you type your own."}
           </p>
           <div className="field">
             <label className="field-label" htmlFor="show-name">
@@ -87,6 +91,7 @@ export function Controls({
               onChange={(event) => onShow({ ...show, name: event.target.value })}
             />
           </div>
+          {template === "show" && (
           <div className="time-row">
             <div className="field">
               <label className="field-label" htmlFor="show-start">
@@ -119,6 +124,7 @@ export function Controls({
               />
             </div>
           </div>
+          )}
         </section>
 
         <p className="hint download-note">
