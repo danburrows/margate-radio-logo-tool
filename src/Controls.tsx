@@ -97,7 +97,7 @@ export function Controls({
                 className="text-input"
                 type="text"
                 inputMode="text"
-                placeholder="12pm"
+                placeholder="00pm"
                 value={show.start}
                 maxLength={20}
                 onChange={(event) => onShow({ ...show, start: event.target.value })}
@@ -112,7 +112,7 @@ export function Controls({
                 className="text-input"
                 type="text"
                 inputMode="text"
-                placeholder="2pm"
+                placeholder="00pm"
                 value={show.end}
                 maxLength={20}
                 onChange={(event) => onShow({ ...show, end: event.target.value })}

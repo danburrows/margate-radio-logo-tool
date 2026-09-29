@@ -27,6 +27,22 @@ export interface RenderInput {
   show: ShowDetails;
 }
 
+const CHECKER_SIZE = 45;
+const CHECKER_LIGHT = "#ffffff";
+const CHECKER_DARK = "#c8c8c8";
+
+/** Grey and white squares shown until a photo is uploaded. */
+function drawChecker(ctx: CanvasRenderingContext2D) {
+  for (let y = 0; y < ARTBOARD_H; y += CHECKER_SIZE) {
+    for (let x = 0; x < ARTBOARD_W; x += CHECKER_SIZE) {
+      const column = x / CHECKER_SIZE;
+      const row = y / CHECKER_SIZE;
+      ctx.fillStyle = (column + row) % 2 === 0 ? CHECKER_LIGHT : CHECKER_DARK;
+      ctx.fillRect(x, y, CHECKER_SIZE, CHECKER_SIZE);
+    }
+  }
+}
+
 function snappedDrawRect(frame: Rect): Rect {
   const x = Math.floor(frame.x);
   const y = Math.floor(frame.y);
@@ -42,10 +58,10 @@ function snappedDrawRect(frame: Rect): Rect {
 export function renderArtboard(ctx: CanvasRenderingContext2D, input: RenderInput) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, ARTBOARD_W, ARTBOARD_H);
-  ctx.fillStyle = "#14120f";
-  ctx.fillRect(0, 0, ARTBOARD_W, ARTBOARD_H);
 
   if (input.photo) {
+    ctx.fillStyle = "#14120f";
+    ctx.fillRect(0, 0, ARTBOARD_W, ARTBOARD_H);
     const frame = photoFrame(
       input.photo.naturalWidth,
       input.photo.naturalHeight,
@@ -55,6 +71,8 @@ export function renderArtboard(ctx: CanvasRenderingContext2D, input: RenderInput
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
     ctx.drawImage(input.photo, draw.x, draw.y, draw.w, draw.h);
+  } else {
+    drawChecker(ctx);
   }
 
   const darken = clamp(input.legibility.darken, 0, 1);
