@@ -17,14 +17,16 @@ export const SHOW_BAR = { x: 32, y: 1189, w: 1016, h: 105 };
 /** White rule on the text column, 8px inside the black bar, stopping 4px before the logo. */
 export const SHOW_RULE = { x: 44, y: 1197, w: 891 };
 export const SHOW_NAME_X = 44;
-export const SHOW_NAME_Y = 1209;
+export const SHOW_NAME_Y = 1203;
 export const SHOW_NAME_MAX_WIDTH = 887;
 export const SHOW_NAME_SIZE = 37;
 /** Space Mono at 37px with a 0.9 line height, matching the design text box. */
 export const SHOW_NAME_LINE_HEIGHT = 33;
 export const SHOW_TIME_X = 44;
-export const SHOW_TIME_Y = 1244;
-export const SHOW_TIME_SIZE = 37;
+export const SHOW_TIME_Y = 1258;
+export const SHOW_TIME_SIZE = 27;
+/** Space Mono at 27px with a 0.9 line height. */
+export const SHOW_TIME_LINE_HEIGHT = 24;
 export const SHOW_HYPHEN_SIZE = 32;
 export const SHOW_HYPHEN_LINE_HEIGHT = 29;
 export const STATION_LABEL_SIZE = 24;

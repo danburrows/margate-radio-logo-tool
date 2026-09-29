@@ -10,6 +10,7 @@ import {
   SHOW_NAME_X,
   SHOW_NAME_Y,
   SHOW_RULE,
+  SHOW_TIME_LINE_HEIGHT,
   SHOW_TIME_SIZE,
   SHOW_TIME_X,
   SHOW_TIME_Y,
@@ -50,10 +51,15 @@ function drawChecker(ctx: CanvasRenderingContext2D) {
 const TEXT_SUPERSAMPLE = 3;
 const TEXT_PAD = 4;
 
+function fontPixelSize(font: string): number {
+  const match = /(\d+(?:\.\d+)?)px/.exec(font);
+  return match ? Number(match[1]) : SHOW_NAME_SIZE;
+}
+
 /** Draw type at a higher resolution, then scale it down for smoother edges. */
 function fillTextSmooth(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
   const width = ctx.measureText(text).width;
-  const fontSize = Number.parseFloat(ctx.font) || SHOW_NAME_SIZE;
+  const fontSize = fontPixelSize(ctx.font);
   const boxW = Math.ceil(width + TEXT_PAD * 2);
   const boxH = Math.ceil(fontSize * 1.4 + TEXT_PAD * 2);
   const off = document.createElement("canvas");
@@ -190,12 +196,13 @@ function showTimeLine(show: ShowDetails): string {
   return start || end;
 }
 
-/** Draw the time with a smaller hyphen, bottom-aligned to the time line. */
+/** Draw the time under a taller hyphen, with the times bottom-aligned to it. */
 function drawTimeLine(ctx: CanvasRenderingContext2D, show: ShowDetails, x: number, y: number) {
   const start = show.start.trim().toUpperCase();
   const end = show.end.trim().toUpperCase();
   const gap = 4;
   let cursor = x;
+  const hyphenY = y - (SHOW_HYPHEN_LINE_HEIGHT - SHOW_TIME_LINE_HEIGHT);
 
   ctx.textAlign = "left";
   if (start) {
@@ -206,7 +213,7 @@ function drawTimeLine(ctx: CanvasRenderingContext2D, show: ShowDetails, x: numbe
   if (start && end) {
     cursor += gap;
     ctx.font = `400 ${SHOW_HYPHEN_SIZE}px "Space Mono"`;
-    fillTextSmooth(ctx, "-", cursor, y + SHOW_NAME_LINE_HEIGHT - SHOW_HYPHEN_LINE_HEIGHT);
+    fillTextSmooth(ctx, "-", cursor, hyphenY);
     cursor += ctx.measureText("-").width + gap;
   }
   if (end) {
