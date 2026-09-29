@@ -11,6 +11,7 @@ import {
   SHOW_TIME_SIZE,
   SHOW_TIME_X,
   SHOW_TIME_Y,
+  STATION_LABEL_RIGHT,
   clamp,
   logoFrame,
   photoFrame,
@@ -110,6 +111,7 @@ function drawLogoBars(ctx: CanvasRenderingContext2D, box: Rect) {
 
 const PLACEHOLDER_NAME = "show name";
 const PLACEHOLDER_TIME = "00pm";
+const STATION_LABEL = "MARGATE RADIO";
 
 /** Sample lockup from the design, used only while a field is still empty. */
 export function previewShow(show: ShowDetails): ShowDetails {
@@ -169,6 +171,7 @@ function drawShow(ctx: CanvasRenderingContext2D, show: ShowDetails, shift: numbe
   if (!name && !times) return;
 
   ctx.textBaseline = "top";
+  ctx.textAlign = "left";
   ctx.letterSpacing = "0px";
   ctx.font = `400 ${SHOW_NAME_SIZE}px "Space Mono"`;
   const lines = name ? wrapShowName(ctx, name) : [];
@@ -193,6 +196,11 @@ function drawShow(ctx: CanvasRenderingContext2D, show: ShowDetails, shift: numbe
     ctx.font = `400 ${SHOW_TIME_SIZE}px "Space Mono"`;
     ctx.fillText(times, SHOW_TIME_X, timeY);
   }
+
+  ctx.font = `400 ${SHOW_TIME_SIZE}px "Space Mono"`;
+  ctx.textAlign = "right";
+  ctx.fillText(STATION_LABEL, STATION_LABEL_RIGHT, timeY);
+  ctx.textAlign = "left";
 }
 
 export async function ensureShowFonts(): Promise<void> {
