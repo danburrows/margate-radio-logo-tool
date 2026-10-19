@@ -1,6 +1,9 @@
 import {
   ARTBOARD_H,
   ARTBOARD_W,
+  LOGO_WIDTH,
+  LOGO_X,
+  LOGO_Y,
   SHOW_BAR,
   SHOW_HYPHEN_LINE_HEIGHT,
   SHOW_HYPHEN_SIZE,
@@ -135,7 +138,12 @@ export function renderArtboard(ctx: CanvasRenderingContext2D, input: RenderInput
 
   const logoBox =
     input.logo && input.logoAdjust
-      ? logoFrame(input.logo.naturalWidth, input.logo.naturalHeight, input.logoAdjust)
+      ? logoFrame(input.logo.naturalWidth, input.logo.naturalHeight, {
+          ...input.logoAdjust,
+          x: LOGO_X,
+          y: LOGO_Y,
+          width: LOGO_WIDTH,
+        })
       : null;
 
   if (input.logo && logoBox) {

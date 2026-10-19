@@ -8,22 +8,22 @@ export const MAX_ZOOM = 4;
 export const MAX_DARKEN = 0.8;
 /** Bottom lockup from the 1080×1350 post: text bar on the left, logo on the right. */
 export const LOGO_X = 939;
-export const LOGO_Y = 1197;
+export const LOGO_Y = 1147;
 export const LOGO_WIDTH = 101;
 export const LOGO_HEIGHT = 89;
 export const MIN_LOGO_WIDTH = 80;
 
-export const SHOW_BAR = { x: 32, y: 1189, w: 1016, h: 105 };
+export const SHOW_BAR = { x: 32, y: 1139, w: 1016, h: 105 };
 /** White rule on the text column, 8px inside the black bar, stopping 4px before the logo. */
-export const SHOW_RULE = { x: 44, y: 1197, w: 891 };
+export const SHOW_RULE = { x: 44, y: 1147, w: 891 };
 export const SHOW_NAME_X = 44;
-export const SHOW_NAME_Y = 1203;
+export const SHOW_NAME_Y = 1153;
 export const SHOW_NAME_MAX_WIDTH = 887;
 export const SHOW_NAME_SIZE = 37;
 /** Space Mono at 37px with a 0.9 line height, matching the design text box. */
 export const SHOW_NAME_LINE_HEIGHT = 33;
 export const SHOW_TIME_X = 44;
-export const SHOW_TIME_Y = 1258;
+export const SHOW_TIME_Y = 1208;
 export const SHOW_TIME_SIZE = 27;
 /** Space Mono at 27px with a 0.9 line height. */
 export const SHOW_TIME_LINE_HEIGHT = 24;
@@ -32,7 +32,7 @@ export const SHOW_HYPHEN_LINE_HEIGHT = 29;
 export const STATION_LABEL_SIZE = 24;
 /** Right edge of the station name, 12px inside the text column. */
 export const STATION_LABEL_RIGHT = 923;
-export const STATION_LABEL_Y = 1262;
+export const STATION_LABEL_Y = 1212;
 
 export const DEFAULT_PHOTO: PhotoAdjust = {
   zoom: 1,
